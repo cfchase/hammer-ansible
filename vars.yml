@@ -1,0 +1,63 @@
+sat_admin_user: admin
+sat_admin_password: changeme
+
+fusor_repositories:
+  - product_name: Fusor
+    name: Puppet
+    label: Puppet1
+    content_type: puppet
+
+  - product_name: Fusor
+    name: Puppet
+    label: Puppet1
+    content_type: puppet
+
+  - product_name: Fusor
+    name: ose-docker-registry
+    label: ose-docker-registry
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-docker-registry
+
+  - product_name: Fusor
+    name: ose-haproxy-router
+    label: ose-haproxy-router
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-haproxy-router
+
+  - product_name: Fusor
+    name: ose-deployer
+    label: ose-deployer
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-deployer
+
+  - product_name: Fusor
+    name: ose-sti-builder
+    label: ose-sti-builder
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-sti-builder
+
+  - product_name: Fusor
+    name: ose-pod
+    label: ose-pod
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-pod
+
+  - product_name: Fusor
+    name: ose-docker-builder
+    label: ose-docker-builder
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-docker-builder
+
+  - product_name: Fusor
+    name: ose-keepalived-ipfailover
+    label: ose-keepalived-ipfailover
+    content_type: docker
+    url: https://registry.access.redhat.com/
+    upstream_name: openshift3/ose-keepalived-ipfailover
+

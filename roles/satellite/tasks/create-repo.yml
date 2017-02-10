@@ -1,0 +1,29 @@
+- name: Get existing repo
+  command: >-
+    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    repository info
+    --organization "{{ org_name }}"
+    --product "{{ repo.product_name }}"
+    --name "{{ repo.name }}"
+  register: repo_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: repo_output|failed and not 'not found' in repo_output.stderr
+#
+#- name: Create Fusor product
+#  shell: hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}" product create --name "{{ product_name }}" --organization "{{ org_name }}"
+#  when: product_output|failed and 'not found' in product_output.stderr
+
+
+- name: Create repository
+  command: >-
+    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    repository create
+    --organization "{{ org_name }}"
+    --product "{{ product_name }}"
+    --name "{{ repo.name }}"
+    --label "{{ repo.label}}"
+    --content-type "{{ repo.content_type }}"
+    {% if repo.url is defined %}--publish-via-http true --url "{{ repo.url }}"{% endif %}
+    {% if repo.upstream_name is defined %}--docker-upstream-name "{{ repo.upstream_name }}"{% endif %}
+  when: repo_output|failed and 'not found' in repo_output.stderr

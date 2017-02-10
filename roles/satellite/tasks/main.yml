@@ -1,0 +1,5 @@
+---
+- include: create-product.yml
+- include: create-repo.yml repo={{item}}
+  with_items:  "{{fusor_repositories}}"
+
