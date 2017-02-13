@@ -1,4 +1,4 @@
-- name: Get existing repo
+- name: Check if repository exists already
   command: >-
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
     repository info
@@ -9,10 +9,6 @@
   ignore_errors: True
   changed_when: False
   failed_when: repo_output|failed and not 'not found' in repo_output.stderr
-#
-#- name: Create Fusor product
-#  shell: hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}" product create --name "{{ product_name }}" --organization "{{ org_name }}"
-#  when: product_output|failed and 'not found' in product_output.stderr
 
 
 - name: Create repository
