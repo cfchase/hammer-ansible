@@ -1,4 +1,5 @@
 ---
 # defaults file for satellite
 org_name: Default Organization
-product_name: Fusor
+fusor_product_name: Fusor
+fusor_puppet_content_view_name: "Fusor Puppet Content"
