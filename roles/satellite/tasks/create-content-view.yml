@@ -1,5 +1,5 @@
 - name: Check if content-view exists already
-  command: >-
+  command: >
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
     content-view info
     --organization "{{ org_name }}"
@@ -10,7 +10,7 @@
   failed_when: cv_output|failed and not 'not found' in cv_output.stderr
 
 - name: Create content-view
-  command: >-
+  command: >
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password }}"
     content-view create
     --organization "{{ org_name }}"

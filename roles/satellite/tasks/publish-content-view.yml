@@ -1,5 +1,5 @@
 - name: Get version of content-view
-  command: >-
+  command: >
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
     content-view info
     --organization "{{ org_name }}"
@@ -7,24 +7,24 @@
   register: cv_output
   changed_when: False
 
-- set_fact: cv="{{ cv_output.stdout | from_json }}"
+- set_fact:
+    cv: "{{ cv_output.stdout | from_json }}"
   changed_when: False
 
-- set_fact: versions="{{ cv["Versions"] }}"
+- set_fact:
+    versions_dict: "{{ cv['Versions'] }}"
   changed_when: False
   when: cv is defined
 
-- set_fact: version_is_current=False
-
-- set_fact: version_is_current=True
-  changed_when: False
-  with_dict: "{{ versions }}"
-  when: versions is defined and item.value is defined and item.value.Version is defined and "{{ (item.value.Version | float) >= version }}"
+- set_fact:
+    max_version: "{{ versions_dict.values() | map(attribute='Version') | list | map('float') | list | max }}"
+  with_dict: "{{ versions_dict }}"
+  when: versions_dict is defined
 
 - name: Publish content-view
-  command: >-
+  command: >
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
     content-view publish
     --organization "{{ org_name }}"
     --name "{{ name }}"
-  when: not version_is_current
+  when: "{{ version is undefined or max_version is undefined or max_version < version }}"

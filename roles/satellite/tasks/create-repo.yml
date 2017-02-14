@@ -1,5 +1,5 @@
 - name: Check if repository exists already
-  command: >-
+  command: >
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
     repository info
     --organization "{{ org_name }}"
@@ -12,7 +12,7 @@
 
 
 - name: Create repository
-  command: >-
+  command: >
     hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
     repository create
     --organization "{{ org_name }}"
