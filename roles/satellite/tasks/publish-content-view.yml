@@ -18,8 +18,7 @@
 
 - set_fact:
     max_version: "{{ versions_dict.values() | map(attribute='Version') | list | map('float') | list | max }}"
-  with_dict: "{{ versions_dict }}"
-  when: versions_dict is defined
+  when: versions_dict is defined and versions_dict.values()
 
 - name: Publish content-view
   command: >
