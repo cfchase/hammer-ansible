@@ -1,0 +1,48 @@
+- set_fact: needs_retry1=False
+
+#fire and forget all the repo synchronization tasks (but not --async)
+- name: "Synchronize repositories"
+  command: >
+    hammer -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    repository synchronize
+    --organization "{{ org_name }}"
+    --product "{{ item.product }}"
+    --name "{{ item.full_name }}"
+  async: "{{ satellite_sync_max_duration }}"
+  poll: 0
+  register: sync_output
+  with_items:  "{{ repos }}"
+
+- name: "Check on sync tasks"
+  async_status: jid={{ item.ansible_job_id }}
+  register: sync_result
+  until: sync_result.finished
+  retries: "{{ satellite_sync_poll_retries }}"
+  delay: "{{ satellite_sync_poll_delay }}"
+  with_items:  "{{ sync_output.results }}"
+
+- set_fact: sync_stdout={{ sync_result.results | map(attribute='stdout') | list | join(';') }}
+- set_fact: needs_retry1={{'Error' in sync_stdout}}
+
+- name: "Synchronize repositories - RETRY 1"
+  command: >
+    hammer -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    repository synchronize
+    --organization "{{ org_name }}"
+    --product "{{ item.product }}"
+    --name "{{ item.full_name }}"
+  async: "{{ satellite_sync_max_duration }}"
+  poll: 0
+  register: sync_output
+  with_items:  "{{ repos }}"
+  when: "{{ needs_retry1 }}"
+
+- name: "Check on sync tasks from RETRY 1"
+  async_status: jid={{ item.ansible_job_id }}
+  register: sync_result
+  until: sync_result.finished
+  retries: "{{ satellite_sync_poll_retries }}"
+  delay: "{{ satellite_sync_poll_delay }}"
+  with_items:  "{{ sync_output.results }}"
+  when: "{{ needs_retry1 }}"
+

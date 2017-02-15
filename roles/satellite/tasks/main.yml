@@ -14,3 +14,5 @@
 
 - include: enable-repo.yml repo={{item}}
   with_items:  "{{ required_repositories }}"
+
+- include: sync-repos.yml repos={{required_repositories}}
