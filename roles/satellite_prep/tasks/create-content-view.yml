@@ -1,8 +1,8 @@
 - name: Check if content-view exists already
   command: >
-    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     content-view info
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --name "{{ name }}"
   register: cv_output
   ignore_errors: True
@@ -11,9 +11,9 @@
 
 - name: Create content-view
   command: >
-    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password }}"
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
     content-view create
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --name "{{ name }}"
   when: cv_output|failed and 'not found' in cv_output.stderr
 

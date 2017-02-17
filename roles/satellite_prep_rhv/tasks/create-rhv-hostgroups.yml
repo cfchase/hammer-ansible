@@ -1,0 +1,219 @@
+- name: Get proxy for hostgroups
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    proxy info
+    --name "{{ config.satellite.fqdn }}"
+  register: proxy_output
+  changed_when: False
+
+- set_fact:
+    proxy: "{{ proxy_output.stdout|from_json }}"
+
+- name: Get os for hostgroups
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    os info
+    --title "{{ config.rhv.medium_os_title }}"
+  register: os_output
+  changed_when: False
+
+- set_fact:
+    medium: "{{ os_output.stdout|from_json }}"
+
+- name: Get {{ config.fusor.hostgroup_name }} hostgroup ID
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    hostgroup info
+    --title "{{ config.fusor.hostgroup_name }}"
+  register: hg_output
+  changed_when: False
+
+- set_fact:
+    fusor_hg_id: "{{ (hg_output.stdout|from_json)['Id']}}"
+
+- name: Check if {{ deployment.label }} hostgroup exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    hostgroup info
+    --title "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}"
+  register: hg_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: hg_output|failed and not 'not found' in hg_output.stderr
+
+- set_fact:
+    deployment_hg_id: "{{ (hg_output.stdout|from_json)['Id'] }}"
+  when: hg_output|succeeded
+
+- name: Create {{ deployment.label }} hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup create
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "{{ deployment.label }}"
+    --parent-id "{{ fusor_hg_id }}"
+    --lifecycle-environment "{{ deployment.lifecycle_env}}"
+    --content-view "{{ config.satellite.default_org_content_view }}"
+    --content-source-id "{{ proxy.Id }}"
+    --puppet-ca-proxy-id "{{ proxy.Id }}"
+    --puppet-proxy-id "{{ proxy.Id }}"
+  register: hg_output
+  when: deployment_hg_id is undefined
+
+- set_fact:
+    deployment_hg_id: "{{ (hg_output.stdout|from_json)['id'] }}"
+  when: deployment_hg_id is undefined
+
+- name: Check if RHV-Engine hostgroup exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    hostgroup info
+    --title "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}/RHV-Engine"
+  register: hg_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: hg_output|failed and not 'not found' in hg_output.stderr
+
+- set_fact:
+    rhv_engine_hg_id: "{{ (hg_output.stdout|from_json)['Id'] }}"
+  when: hg_output|succeeded
+
+- name: Create RHV-Engine hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup create
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "RHV-Engine"
+    --parent-id "{{ deployment_hg_id  }}"
+    --lifecycle-environment "{{ deployment.lifecycle_env}}"
+    --content-view "{{ config.satellite.default_org_content_view }}"
+    --architecture "{{ config.rhv.arch_name }}"
+    --operatingsystem "{{ config.rhv.os_title }}"
+    --medium-id "{{ medium['Installation media'][0]['id']  }}"
+    --partition-table "{{ config.rhv.partition_table_name }}"
+    --root-pass "{{ deployment.rhv.root_password }}"
+    --locations "{{ config.satellite.default_location_name }}"
+  register: hg_output
+  when: rhv_engine_hg_id is undefined
+
+- set_fact:
+    rhv_engine_hg_id: "{{ (hg_output.stdout|from_json)['id'] }}"
+  when: rhv_engine_hg_id is undefined
+
+- set_fact:
+    key_name: "RHV_Engine-{{deployment.label}}-RHV_Engine"
+
+- name: Check if {{ key_name }} activation-key exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    activation-key info
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "{{ key_name }}"
+  register: ak_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: ak_output|failed and not 'not found' in ak_output.stderr
+
+- set_fact:
+    rhv_engine_ak: "{{ ak_output.stdout|from_json }}"
+  when: ak_output|succeeded
+
+- name: Create {{ key_name }} hostgroup activation key
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    activation-key create
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "{{ key_name }}"
+    --lifecycle-environment "{{ deployment.lifecycle_env}}"
+    --content-view "{{ config.satellite.default_org_content_view }}"
+  register: ak_output
+  when: rhv_engine_ak is undefined
+
+- set_fact:
+    rhv_engine_ak: "{{ ak_output.stdout|from_json }}"
+  when: rhv_engine_ak is undefined
+
+- name: Update activation key on RHV-Engine hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup set-parameter
+    --hostgroup-id "{{ rhv_engine_hg_id }}"
+    --name "kt_activation_keys"
+    --value "{{ key_name }}"
+
+- name: Check if RHV-Hypervisor hostgroup exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    hostgroup info
+    --title "{{ config.fusor.hostgroup_name }}/{{ deployment.label }}/RHV-Hypervisor"
+  register: hg_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: hg_output|failed and not 'not found' in hg_output.stderr
+
+- set_fact:
+    rhv_hypervisor_hg_id: "{{ (hg_output.stdout|from_json)['Id'] }}"
+  when: hg_output|succeeded
+
+- name: Create RHV-Hypervisor hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup create
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "RHV-Hypervisor"
+    --parent-id "{{ deployment_hg_id  }}"
+    --lifecycle-environment "{{ deployment.lifecycle_env}}"
+    --content-view "{{ config.satellite.default_org_content_view }}"
+    --architecture "{{ config.rhv.arch_name }}"
+    --operatingsystem "{{ config.rhv.os_title }}"
+    --medium-id "{{ medium['Installation media'][0]['id']  }}"
+    --partition-table "{{ config.rhv.partition_table_name }}"
+    --root-pass "{{ deployment.rhv.root_password }}"
+    --locations "{{ config.satellite.default_location_name }}"
+  register: hg_output
+  when: rhv_hypervisor_hg_id is undefined
+
+- set_fact:
+    rhv_hypervisor_hg_id: "{{ (hg_output.stdout|from_json)['id'] }}"
+  when: rhv_hypervisor_hg_id is undefined
+
+- set_fact:
+    key_name: "RHV_Hypervisor-{{deployment.label}}-RHV_Hypervisor"
+
+- name: Check if {{ key_name }} activation-key exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    activation-key info
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "{{ key_name }}"
+  register: ak_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: ak_output|failed and not 'not found' in ak_output.stderr
+
+- set_fact:
+    rhv_hypervisor_ak: "{{ ak_output.stdout|from_json }}"
+  when: ak_output|succeeded
+
+- name: Create {{ key_name }} hostgroup activation key
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    activation-key create
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "{{ key_name }}"
+    --lifecycle-environment "{{ deployment.lifecycle_env}}"
+    --content-view "{{ config.satellite.default_org_content_view }}"
+  register: ak_output
+  when: rhv_hypervisor_ak is undefined
+
+- set_fact:
+    rhv_hypervisor_ak: "{{ ak_output.stdout|from_json }}"
+  when: rhv_hypervisor_ak is undefined
+
+- name: Update activation key on RHV-Hypervisor hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup set-parameter
+    --hostgroup-id "{{ rhv_hypervisor_hg_id }}"
+    --name "kt_activation_keys"
+    --value "{{ key_name }}"

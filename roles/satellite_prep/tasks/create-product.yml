@@ -1,0 +1,14 @@
+- name: Check if product exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    product info --name "{{ name }}" --organization "{{ config.satellite.default_org_name }}"
+  register: product_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: product_output|failed and not 'not found' in product_output.stderr
+
+- name: Create product
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    product create --name "{{ name }}" --organization "{{ config.satellite.default_org_name }}"
+  when: product_output|failed and 'not found' in product_output.stderr

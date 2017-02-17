@@ -1,8 +1,5 @@
 ---
 # defaults file for satellite
-org_name: Default Organization
-fusor_product_name: Fusor
-fusor_puppet_content_view_name: "Fusor Puppet Content"
 satellite_sync_max_duration: 86400
 satellite_sync_poll_retries: 300
 satellite_sync_poll_delay: 300

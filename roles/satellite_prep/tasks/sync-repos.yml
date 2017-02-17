@@ -3,9 +3,9 @@
 #fire and forget all the repo synchronization tasks (but not --async)
 - name: "Synchronize repositories"
   command: >
-    hammer -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     repository synchronize
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --product "{{ item.product }}"
     --name "{{ item.full_name }}"
   async: "{{ satellite_sync_max_duration }}"
@@ -26,9 +26,9 @@
 
 - name: "Synchronize repositories - RETRY 1"
   command: >
-    hammer -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     repository synchronize
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --product "{{ item.product }}"
     --name "{{ item.full_name }}"
   async: "{{ satellite_sync_max_duration }}"

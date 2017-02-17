@@ -1,8 +1,8 @@
 - name: Check if repository is enabled already
   command: >
-    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     repository info
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --product "{{ repo.product }}"
     --name "{{ repo.full_name }}"
   register: repo_output
@@ -13,9 +13,9 @@
 
 - name: Enable repository
   command: >
-    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     repository-set enable
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --product "{{ repo.product }}"
     {% if repo.releasever is defined %}--releasever "{{ repo.releasever }}"{% endif %}
     --basearch "{{ repo.basearch}}"

@@ -1,2 +1,0 @@
-[satellite]
-cchase-desktop.usersys.redhat.com:22022 ansible_user=vagrant ansible_ssh_pass=vagrant

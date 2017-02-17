@@ -1,5 +1,37 @@
-sat_admin_user: "admin"
-sat_admin_password: "changeme"
+deployment:
+  name: "rhv deployment"
+  label: "rhv_deployment"
+  org_name: "Default Organization"
+  content_view: "Default Organization View"
+  location_name: "Default Location"
+  lifecycle_env: "Library"
+
+  rhv:
+    root_password: "changeme"
+
+config:
+  satellite:
+    admin_user: "admin"
+    admin_password: "changeme"
+    domain_name: "fusor.net"
+    subnet_name: "default"
+    fqdn: "satellite.fusor.net"
+    default_org_name: "Default Organization"
+    default_org_content_view: "Default Organization View"
+    default_location_name: "Default Location"
+
+  fusor:
+    product_name: "Fusor"
+    puppet_content_view_name: "Fusor Puppet Content"
+    hostgroup_name: "Fusor Base"
+
+  rhv:
+    medium_os_title: "RedHat 7.3"
+    arch_name: "x86_64"
+    os_title: "RedHat 7.3"
+    partition_table_name: "Kickstart default"
+
+
 
 fusor_repositories:
   - product: "Fusor"
@@ -108,4 +140,42 @@ required_repositories:
     name: "Red Hat Virtualization 4 Management Agents for RHEL 7 (RPMs)"
     full_name: "Red Hat Virtualization 4 Management Agents for RHEL 7 RPMs x86_64 7Server"
 
+host_groups:
+  rhv:
+    - name: "RHV-Engine"
+      os: "RedHat"
+      major: "7"
+      minor: "3"
+      parent: "Fusor Base"
+      puppet_classes:
+      activation_key:
+        name: "RHV-Engine"
+        content: "rhevm"
+        subscription_descriptions:
+          - "Red Hat Cloud Infrastructure"
+
+    - name: "RHV-Hypervisor"
+      os: "RedHat"
+      major: "7"
+      minor: "3"
+      parent: "Fusor Base"
+      puppet_classes:
+      activation_key:
+        name: "RHV-Hypervisor"
+        content: "rhevh"
+        subscription_descriptions:
+          - "Red Hat Cloud Infrastructure"
+
+    - name: "RHV-Self-hosted"
+      os: "RedHat"
+      major: "7"
+      minor: "3"
+      ptable: "rhev_self_hosted"
+      parent: "Fusor Base"
+      puppet_classes:
+      activation_key:
+        name: "RHV-Self-hosted"
+        content: "rhevsh"
+        subscription_descriptions:
+          - "Red Hat Cloud Infrastructure"
 

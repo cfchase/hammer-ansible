@@ -1,0 +1,37 @@
+- name: Check if {{ config.fusor.hostgroup_name }} hostgroup exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    hostgroup info
+    --title "{{ config.fusor.hostgroup_name }}"
+  register: hg_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: hg_output|failed and not 'not found' in hg_output.stderr
+
+- set_fact:
+    fusor_hostgroup_id: "{{ (hg_output.stdout|from_json)['Id'] }}"
+  when: hg_output|succeeded
+
+- name: Create {{ config.fusor.hostgroup_name }} hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup create
+    --organization "{{ config.satellite.default_org_name }}"
+    --name "{{ config.fusor.hostgroup_name }}"
+    --domain "{{ config.satellite.domain_name }}"
+    --subnet "{{ config.satellite.subnet_name }}"
+  register: hg_output
+  when: fusor_hostgroup_id is undefined
+
+- set_fact:
+    fusor_hostgroup_id: "{{ (hg_output.stdout|from_json)['id'] }}"
+  when: fusor_hostgroup_id is undefined
+
+- name: Update ntp-server on {{ config.fusor.hostgroup_name }} hostgroup
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    hostgroup set-parameter
+    --hostgroup-id "{{ fusor_hostgroup_id }}"
+    --name "ntp-server"
+    --value "{{ config.satellite.fqdn }}"
+

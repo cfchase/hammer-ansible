@@ -1,18 +1,21 @@
 ---
-- include: create-product.yml name={{fusor_product_name}}
+- include: create-product.yml name={{config.fusor.product_name}}
 
 - include: create-repo.yml repo={{item}}
   with_items:  "{{ fusor_repositories }}"
 
-- include: create-content-view.yml name={{fusor_puppet_content_view_name}}
+- include: create-content-view.yml name={{config.fusor.puppet_content_view_name}}
 
 # Todo Access Insights
 #- include: import-puppet-classes.yml
 #  with_items: "{{ fusor_puppet_classes }}"
 
-- include: publish-content-view.yml name={{fusor_puppet_content_view_name}} version=1
+- include: publish-content-view.yml name={{config.fusor.puppet_content_view_name}} version=1
 
 - include: enable-repo.yml repo={{item}}
   with_items:  "{{ required_repositories }}"
 
 - include: sync-repos.yml repos={{required_repositories}}
+
+- include: create-fusor-hostgroup.yml
+

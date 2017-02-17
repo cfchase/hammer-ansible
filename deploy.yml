@@ -1,0 +1,5 @@
+---
+- hosts: satellite
+  roles:
+#    - satellite_prep
+    - satellite_prep_rhv

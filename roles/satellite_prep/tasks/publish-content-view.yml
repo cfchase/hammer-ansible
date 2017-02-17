@@ -1,8 +1,8 @@
 - name: Get version of content-view
   command: >
-    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     content-view info
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --name "{{ name }}"
   register: cv_output
   changed_when: False
@@ -22,8 +22,8 @@
 
 - name: Publish content-view
   command: >
-    hammer --output json -u "{{ sat_admin_user }}" -p "{{ sat_admin_password}}"
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
     content-view publish
-    --organization "{{ org_name }}"
+    --organization "{{ config.satellite.default_org_name }}"
     --name "{{ name }}"
   when: "{{ version is undefined or max_version is undefined or max_version < version }}"
