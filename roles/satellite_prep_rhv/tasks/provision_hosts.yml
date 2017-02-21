@@ -1,0 +1,43 @@
+- name: Check for discovered hosts
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    discovery info
+    --id "{{ item }}"
+  register: dh_output
+  ignore_errors: True
+  changed_when: False
+  with_items: "{{ host_ids }}"
+
+- set_fact:
+    successful_results: "{{ dh_output.results|rejectattr('stderr')|list }}"
+
+- set_fact:
+    discovered_host_ids: "{{ successful_results|map(attribute='stdout')|list|map('from_json')|list|map(attribute='ID')|list }}"
+
+- name: Provision discovered hosts
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password }}"
+    discovery provision
+    --id "{{ item }}"
+    --hostgroup-title "{{hostgroup_title}}"
+    --build "true"
+    --enabled "true"
+    --managed "true"
+  register: provision_output
+  with_items: "{{ discovered_host_ids }}"
+
+- name: Check on status of all hosts until they fully provisioned
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    host info
+    --id "{{ item }}"
+  register: host_status
+  changed_when: False
+  until: >
+    not host_status.stderr
+    and host_status.stdout
+    and (host_status.stdout|from_json)['Installed at']
+    and (host_status.stdout|from_json)["Additional info"]["Model"]["errata_status"] == 0
+  retries: "{{ satellite_provision_poll_retries }}"
+  delay: "{{ satellite_provision_poll_delay }}"
+  with_items: "{{ host_ids }}"

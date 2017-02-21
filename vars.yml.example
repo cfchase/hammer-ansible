@@ -8,6 +8,12 @@ deployment:
 
   rhv:
     root_password: "changeme"
+    engines:
+      - id: 3
+    hypervisors:
+      - id: 4
+      - id: 5
+      - id: 6
 
 config:
   satellite:
@@ -30,7 +36,6 @@ config:
     arch_name: "x86_64"
     os_title: "RedHat 7.3"
     partition_table_name: "Kickstart default"
-
 
 
 fusor_repositories:

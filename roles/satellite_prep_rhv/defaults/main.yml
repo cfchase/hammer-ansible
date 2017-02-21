@@ -1,2 +1,3 @@
 ---
-# defaults file for satellite_prep_rhv
+satellite_provision_poll_retries: 30
+satellite_provision_poll_delay: 60
