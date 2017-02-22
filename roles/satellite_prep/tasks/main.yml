@@ -1,5 +1,7 @@
 ---
-- include: create_product.yml name={{config.fusor.product_name}}
+- include: create_product.yml
+  vars:
+    name: "{{config.fusor.product_name}}"
 
 - include: create_repo.yml repo={{item}}
   with_items:  "{{ fusor_repositories }}"
@@ -10,12 +12,18 @@
 #- include: import_puppet_classes.yml
 #  with_items: "{{ fusor_puppet_classes }}"
 
-- include: publish_content_view.yml name={{config.fusor.puppet_content_view_name}} version=1
+- include: publish_content_view.yml
+  vars:
+    name: "{{config.fusor.puppet_content_view_name}}"
+    version: 1
 
-- include: enable_repo.yml repo={{item}}
+- include: enable_repo.yml
+  vars:
+    repo: "{{ item }}"
   with_items:  "{{ required_repositories }}"
 
-- include: sync_repos.yml repos={{required_repositories}}
+- include: sync_repos.yml
+    repos: "{{ required_repositories }}"
 
 - include: create_fusor_hostgroup.yml
 

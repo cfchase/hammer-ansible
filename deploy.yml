@@ -4,7 +4,7 @@
     - satellite_prep
     - satellite_prep_rhv
 
-- hosts: rhv-engines
+- hosts: rhv-engine
   roles:
     - distribute_ssh_keys
 
@@ -12,3 +12,4 @@
   roles:
     - distribute_ssh_keys
 
+- include: deploy_rhv.yml

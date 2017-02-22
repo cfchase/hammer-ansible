@@ -1,0 +1,14 @@
+---
+
+- name: Wait for RHV UI
+  uri:
+    url: https://{{ engine_fqdn }}/ovirt-engine/api
+    method: GET
+    validate_certs: no
+    user: '{{ engine_username }}'
+    password: '{{ admin_password }}'
+  register: result
+  until: result.status == 200
+  retries: '{{ retries }}'
+  delay: '{{ delay }}'
+  changed_when: false

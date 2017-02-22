@@ -1,0 +1,34 @@
+---
+
+- name: ensure the script directory exists
+  file:
+    path: '{{ config_dir }}/scripts'
+    state: directory
+    recurse: yes
+    mode: 0700
+  tags:
+    - config
+
+- name: copy storage setup script
+  copy:
+    src: files/datacenter_config
+    dest: '{{ config_dir }}/scripts/datacenter_config'
+    mode: 0700
+  tags:
+    - config
+
+- name: Create datacenter and cluster
+  command: >
+    '{{ config_dir }}'/scripts/datacenter_config  --url='https://{{ engine_fqdn }}/ovirt-engine/api'
+                                          --username='{{ engine_username }}'
+                                          --password='{{ admin_password }}'
+                                          --name='{{ dc_name }}'
+                                          --cluster-name='{{ cluster_name }}'
+                                          --cpu-type='{{ cpu_type }}'
+                                          --mac-address-range='{{ mac_address_range }}'
+                                          --mac-pool-name='{{ mac_pool_name }}'
+                                          --comp-version='{{ compatibility_version }}'
+  retries: 5
+  delay: 60
+  tags:
+    - config

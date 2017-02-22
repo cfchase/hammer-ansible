@@ -1,0 +1,47 @@
+#cloud-config
+# vim: syntax=yaml
+
+disable_root: false
+ssh_pwauth: true
+
+ssh_authorized_keys:
+  - {{ ssh_authorized_key }}
+
+chpasswd:
+  list: |
+    root:{{ root_password }}
+  expire: False
+
+write_files:
+ - content: |
+     [environment:init]
+     DIALOG/autoAcceptDefault=bool:True
+     [environment:default]
+     OVESETUP_CONFIG/adminPassword=str:{{ admin_password }}
+     OVESETUP_CONFIG/fqdn=str:{{ engine_fqdn }}
+     OVESETUP_PKI/organization=str:{{ engine_organization }}
+     OVESETUP_DB/host=str:{{ engine_db_host }}
+     OVESETUP_DB/user=str:{{ engine_db_user }}
+     OVESETUP_DB/password=str:{{ engine_db_password }}
+     OVESETUP_DB/port=int:{{ engine_db_port }}
+     OVESETUP_CONFIG/applicationMode=str:{{ engine_application_mode }}
+     OVESETUP_CONFIG/storageType=str:{{ storage_type }}
+     OVESETUP_DWH_CORE/enable=bool:True
+     OVESETUP_DWH_DB/host=str:{{ engine_db_host }}
+     OVESETUP_DWH_DB/password=str:{{ engine_db_password }}
+     OVESETUP_DWH_DB/port=int:{{ engine_db_port }}
+     OVESETUP_REPORTS_CORE/enable=bool:True
+     OVESETUP_REPORTS_CONFIG/adminPassword=str:{{ admin_password }}
+     OVESETUP_REPORTS_DB/host=str:{{ engine_db_host }}
+     OVESETUP_REPORTS_DB/password=str:{{ engine_db_password }}
+     OVESETUP_REPORTS_DB/port=int:{{ engine_db_port }}
+   path: /root/answers
+   owner: root:root
+   permissions: '0640'
+
+runcmd:
+ - echo "Running engine setup" 1>/dev/virtio-ports/org.ovirt.hosted-engine-setup.0 2>&1
+ - /usr/bin/engine-setup --offline --config-append=/root/answers 1>/dev/virtio-ports/org.ovirt.hosted-engine-setup.0 2>&1
+ - if [ $? -eq 0 ]; then echo "HE_APPLIANCE_ENGINE_SETUP_SUCCESS" >/dev/virtio-ports/org.ovirt.hosted-engine-setup.0; else echo "HE_APPLIANCE_ENGINE_SETUP_FAIL" >/dev/virtio-ports/org.ovirt.hosted-engine-setup.0; fi
+ - systemctl mask cloud-init-local ||  chkconfig cloud-init-local off
+ - systemctl mask cloud-init || ( chkconfig cloud-init off && chkconfig cloud-config off && chkconfig cloud-final off )

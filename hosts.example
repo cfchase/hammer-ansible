@@ -1,13 +1,13 @@
 [satellite]
 my-desktop.example.com:22022 ansible_user=vagrant ansible_ssh_pass=vagrant
 
-[rhv-engines]
+[rhv-engine]
 engine.fusor.net
 
 [rhv-hypervisors]
 hypervisor.fusor.net
 
-[rhv-engines:vars]
+[rhv-engine:vars]
 ansible_user=root
 ansible_ssh_pass=password
 
