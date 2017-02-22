@@ -1,0 +1,20 @@
+---
+- copy:
+    src: id_rsa
+    dest: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: 0600
+
+- copy:
+    src: id_rsa.pub
+    dest: /root/.ssh/id_rsa.pub
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Set authorized key from file
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', 'id_rsa.pub') }}"

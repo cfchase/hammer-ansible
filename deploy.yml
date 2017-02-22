@@ -3,3 +3,12 @@
   roles:
     - satellite_prep
     - satellite_prep_rhv
+
+- hosts: rhv-engines
+  roles:
+    - distribute_ssh_keys
+
+- hosts: rhv-hypervisors
+  roles:
+    - distribute_ssh_keys
+

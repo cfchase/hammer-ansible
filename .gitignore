@@ -1,2 +1,5 @@
 vars.yml
 hosts
+secrets.yml
+id_rsa
+id_rsa.pub
