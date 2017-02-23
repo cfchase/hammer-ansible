@@ -1,0 +1,5 @@
+---
+engine_fqdn: test-rhev-engine.example.com
+engine_username: admin@internal
+root_password: changeme
+

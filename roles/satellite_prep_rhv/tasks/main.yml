@@ -1,5 +1,12 @@
 ---
 - include: create_rhv_hostgroups.yml
 
-- include: provision_hosts.yml host_ids="{{ deployment.rhv.engines|map(attribute='id')|list }}" hostgroup_title="{{config.fusor.hostgroup_name}}/{{ deployment.label }}/RHV-Engine"
-- include: provision_hosts.yml host_ids="{{ deployment.rhv.hypervisors|map(attribute='id')|list }}" hostgroup_title="{{config.fusor.hostgroup_name}}/{{ deployment.label }}/RHV-Hypervisor"
+- include: provision_hosts.yml
+  vars:
+    host_ids: "{{ deployment.rhv.engines|map(attribute='id')|list }}"
+    hostgroup_title: "{{config.fusor.hostgroup_name}}/{{ deployment.label }}/RHV-Engine"
+
+- include: provision_hosts.yml
+  vars:
+    host_ids: "{{ deployment.rhv.hypervisors|map(attribute='id')|list }}"
+    hostgroup_title: "{{config.fusor.hostgroup_name}}/{{ deployment.label }}/RHV-Hypervisor"

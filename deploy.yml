@@ -13,3 +13,7 @@
     - distribute_ssh_keys
 
 - include: deploy_rhv.yml
+
+- hosts: satellite
+  roles:
+    - satellite_post_rhv

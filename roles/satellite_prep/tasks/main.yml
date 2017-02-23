@@ -6,7 +6,9 @@
 - include: create_repo.yml repo={{item}}
   with_items:  "{{ fusor_repositories }}"
 
-- include: create_content_view.yml name={{config.fusor.puppet_content_view_name}}
+- include: create_content_view.yml
+  vars:
+    name: "{{config.fusor.puppet_content_view_name}}"
 
 # Todo Access Insights
 #- include: import_puppet_classes.yml
@@ -23,6 +25,7 @@
   with_items:  "{{ required_repositories }}"
 
 - include: sync_repos.yml
+  vars:
     repos: "{{ required_repositories }}"
 
 - include: create_fusor_hostgroup.yml

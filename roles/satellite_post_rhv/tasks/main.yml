@@ -1,0 +1,33 @@
+---
+- name: Check if compute resource exists already
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    compute-resource info --name "{{deployment.label}}-RHV"
+  register: cr_output
+  ignore_errors: True
+  changed_when: False
+  failed_when: cr_output|failed and not 'not found' in cr_output.stderr
+
+- debug:
+    var: cr_output
+
+# TODO add public key to compute resource
+# ca_url = "http://#{rhevm}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA"
+# ca_cert = "#{Net::HTTP.get(URI.parse(ca_url))}"
+# "public_key" => ca_cert
+- name: Create compute resource
+  command: >
+    hammer --output json -u "{{ config.satellite.admin_user }}" -p "{{ config.satellite.admin_password}}"
+    compute-resource create
+    --name "{{deployment.label}}-RHV"
+    --organizations "{{ deployment.org_name }}"
+    --locations "{{ deployment.location_name }}"
+    --url "https://{{ deployment.rhv.engine_fqdn}}/ovirt-engine/api/v3"
+    --provider "Ovirt"
+    --user "{{ engine_username }}"
+    --password "{{ deployment.rhv.root_password}}"
+  when: cr_output|failed and 'not found' in cr_output.stderr
+
+- debug:
+    var: cr_output
+
